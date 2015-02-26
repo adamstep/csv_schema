@@ -57,7 +57,7 @@ describe CSVSchema do
 
       it "should raise when duplicate headers exist according to the HEADERS_TRANSFORM proc and the ALLOW_DUPLICATE_HEADERS flag is FALSE" do
         @headers = ['header_1', 'HEADER 1']
-        transform = FasterCSV::HeaderConverters[:symbol]
+        transform = CSV::HeaderConverters[:symbol]
         lambda{CSVSchema.new(@lenient_options.merge(:file => generate_csv_file.path, :allow_duplicate_headers => false, :headers_transform => transform)).validate}.should raise_error
       end
 
@@ -98,13 +98,13 @@ describe CSVSchema do
 
       it "should NOT raise when the transformed headers do exist" do
         @headers = ['HEADER 1']
-        transform = FasterCSV::HeaderConverters[:symbol]
+        transform = CSV::HeaderConverters[:symbol]
         lambda { CSVSchema.new(@lenient_options.merge(:file => generate_csv_file.path, :required_headers => [:header_1], :headers_transform => transform)).validate }.should_not raise_error()
       end
 
       it "should raise when the transformed headers do NOT exist" do
         @headers = ['HEADER 1']
-        transform = FasterCSV::HeaderConverters[:symbol]
+        transform = CSV::HeaderConverters[:symbol]
         lambda { CSVSchema.new(@lenient_options.merge(:file => generate_csv_file.path, :required_headers => @headers, :headers_transform => transform)).validate }.should raise_error(StandardError, /#{@headers.first}/)
       end
 

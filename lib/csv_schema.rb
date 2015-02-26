@@ -1,4 +1,4 @@
-require 'fastercsv'
+require 'csv'
 
 class CSVSchema
   def initialize(args)
@@ -25,7 +25,7 @@ class CSVSchema
   def validate()
     raise "#{@file} cannot be found" unless File.exists?(@file)
     @current_row = 1
-    FasterCSV.foreach(@file) do |row|
+    CSV.foreach(@file) do |row|
       if @current_row == 1
         headers = transform(row)
         index_field_requirements_by_column_number(headers)
