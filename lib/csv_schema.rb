@@ -2,7 +2,13 @@ require 'csv'
 
 class CSVSchema
   def initialize(args)
-    @file = args[:file] || raise(":file argument is required")
+    if args[:file]
+      @file = args[:file]
+    elsif args[:data]
+      @data = args[:data]
+    else
+      raise(":file or :data argument is required")
+    end
 
     @allow_duplicate_headers = (args[:allow_duplicate_headers] == nil ? false : args[:allow_duplicate_headers])
     @headers_transform = args[:headers_transform]
@@ -22,10 +28,16 @@ class CSVSchema
     end
   end
 
+  def name
+    @file ? File.basename(@file) : 'csv'
+  end
+
   def validate()
-    raise "#{@file} cannot be found" unless File.exists?(@file)
+    raise "#{@file} cannot be found" if (@file && !File.exists?(@file))
+    @data = CSV.read(@file) if @file
+
     @current_row = 1
-    CSV.foreach(@file) do |row|
+    @data.each do |row|
       if @current_row == 1
         headers = transform(row)
         index_field_requirements_by_column_number(headers)
@@ -84,11 +96,11 @@ private
 
   def validate_required_headers(headers)
     missing = @required_headers - headers
-    raise "#{File.basename(@file)} is missing headers: #{missing.inspect}" unless missing.empty?
+    raise "#{name} is missing headers: #{missing.inspect}" unless missing.empty?
   end
 
   def validate_blank_rows(row)
-    raise "Row #{@current_row} in #{File.basename(@file)} is blank" if row.all?{|f| (f == nil) || (f == '')}
+    raise "Row #{@current_row} in #{name} is blank" if row.all?{|f| (f == nil) || (f == '')}
   end
 
   def validate_different_field_counts(row)
